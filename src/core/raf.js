@@ -4,32 +4,35 @@
 // requestAnimationFrame polyfill by Erik Möller
 // fixes from Paul Irish and Tino Zijdel
 
-// (function () {
+import { now } from '../util/index'
+
 let lastTime = 0
+let _requestAnimationFrame
+let _cancelAnimationFrame
 const vendors = ['ms', 'moz', 'webkit', 'o']
 for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-	window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame']
-	window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] ||
+	_requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame']
+	_cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] ||
 	window[vendors[x] + 'CancelRequestAnimationFrame']
 }
 
-if (!window.requestAnimationFrame) {
-	window.requestAnimationFrame = function (callback, element) {
-		var currTime = new Date().getTime()
+if (!_requestAnimationFrame) {
+	_requestAnimationFrame = function (callback, element) {
+		var currTime = now()
 		var timeToCall = Math.max(0, 16 - (currTime - lastTime))
-		var id = window.setTimeout(function () { callback(currTime + timeToCall) },
-			timeToCall)
+		var id = window.setTimeout(function () {
+			callback(currTime + timeToCall)
+		}, timeToCall)
 		lastTime = currTime + timeToCall
 		return id
 	}
 }
 
-if (!window.cancelAnimationFrame) {
-	window.cancelAnimationFrame = function (id) {
+if (!_cancelAnimationFrame) {
+	_cancelAnimationFrame = function (id) {
 		clearTimeout(id)
 	}
 }
 
-export const requestAnimationFrame = window.requestAnimationFrame
-export const cancelAnimationFrame = window.cancelAnimationFrame
-// }())
+export const requestAnimationFrame = _requestAnimationFrame
+export const cancelAnimationFrame = _cancelAnimationFrame
