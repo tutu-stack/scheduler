@@ -57,18 +57,31 @@ export class ScheduleManager {
 	}
 
 	emitAll () {
-		Object.keys(this.tickers).map(gap => {
+		const runTicks = ticks => {
+			const len = ticks.length
+			for (let i = 0; i < len; i++) {
+				if (!this.started) { break }
+				const tick = ticks[i]
+				tick.run()
+			}
+		}
+
+		const keys = Object.keys(this.tickers)
+		const len = keys.length
+		for (let index = 0; index < len; index++) {
+			if (!this.started) { break }
+			const gap = keys[index]
 			const ticks = this.tickers[gap]
 
 			if (!gap) {
-				ticks.forEach(tick => tick.run())
+				runTicks(ticks)
 			} else {
-				if (now() - ticks.prevTime >= gap) {
+				if (ticks && (now() - ticks.prevTime >= gap)) {
 					ticks.prevTime = now()
-					ticks.forEach(tick => tick.run())
+					runTicks(ticks)
 				}
 			}
-		})
+		}
 	}
 
 	_add (node, gap) {
@@ -78,7 +91,7 @@ export class ScheduleManager {
 
 		const len = this.tickers[gap].push(node)
 		node.destroyEmitParentCallback = () => {
-			console.log(len)
+			// console.log(len)
 			this.tickers[gap].splice(len - 1, 1)
 		}
 

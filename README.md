@@ -6,7 +6,7 @@
 let schedule = new Scheduler()
 schedule.add(function () {
 	console.log(this) // {wow: 'me'} per second
-}, {wow: 'me'}, 1000)
+}, { wow: 'me' }, 1000)
 schedule.start();
 
 schedule.addOnce(() => console.log('once'))
@@ -23,5 +23,9 @@ setTimeout(function () {
 }, 1000 * 1000);
 ```
 
+## stop
 
+```js
+schedule.stop();
+```
 
