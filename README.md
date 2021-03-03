@@ -4,10 +4,10 @@
 
 ```js
 let schedule = new Scheduler()
-schedule.add(function () {
-	console.log(this) // {wow: 'me'} per second
-}, { wow: 'me' }, 1000)
 schedule.start();
+const destroyCallFun = schedule.add(function () {
+	console.log(this) // {wow: 'me'} per second
+}, 1000, { wow: 'me' })
 
 schedule.addOnce(() => console.log('once'))
 
@@ -15,12 +15,14 @@ const fn = () => console.log(Math.random())
 schedule.add(fn, 2000)
 
 setTimeout(function () {
-	schedule.remove(fn)
+	destroyCallFun()
 }, 1000 * 90)
 
-setTimeout(function () {
-	schedule.empty()
-}, 1000 * 1000);
+function start () {
+	requestAnimationFrame(start)
+	schedule.update()
+}
+start()
 ```
 
 ## stop
