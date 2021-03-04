@@ -1,10 +1,9 @@
 const noop = Function.prototype
 
 export class Tick {
-	constructor (fn, context, once = false) {
+	constructor (fn, context) {
 		this.fn = typeof fn === 'function' ? fn : noop
 		this.context = context
-		// this.once = once
 		this.isDestroyed = false
 	}
 

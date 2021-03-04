@@ -1,5 +1,5 @@
-import Tick from './core/schedule.js'
-import { now, createEmptyArray } from './util/index.js'
+import { Tick } from './core/tick.js'
+import { now, createEmptyArray, isObject } from './util/index.js'
 
 class ScheduleItem {
 	static create (fn, gap, context) {
@@ -29,11 +29,6 @@ class ScheduleItem {
 		if (this.__gap <= 0) {
 			this.tick.run()
 			this.__gap = this.gap
-
-			// once
-			if (this._once) {
-				this.$parent.ticks.$remove(this)
-			}
 		}
 
 		this.__currentTime = now()
@@ -46,9 +41,8 @@ export default class Scheduler {
 		this.ticks = createEmptyArray()
 	}
 
-	add (fn, gap, context) {
+	add (fn, gap = 16.67, context) {
 		const item = ScheduleItem.create(fn, gap, context)
-		item.$parent = this
 		this.ticks.push(item)
 
 		return () => {
@@ -56,10 +50,16 @@ export default class Scheduler {
 		}
 	}
 
-	addOnce (fn, gap, context) {
-		const item = ScheduleItem.create(fn, gap, context)
-		item._once = true
-		item.$parent = this
+	addOnce (fn, gap = 16.67, context) {
+		const destroyCallFun = () => {
+			if (isObject(context)) {
+				fn = fn.bind(context)
+			}
+
+			fn()
+			this.ticks.$remove(item)
+		}
+		const item = ScheduleItem.create(destroyCallFun, gap, context)
 		this.ticks.push(item)
 
 		return () => {
